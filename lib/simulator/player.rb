@@ -1,19 +1,17 @@
-require_relative 'strategy'
 require_relative '../cards/shoe'
 require_relative '../cards/hand'
 require_relative '../arguments/report'
 require_relative '../cards/wager'
-require_relative '../arguments/parameters'
 require_relative '../table/rules'
+require_relative '../table/strategy'
 
 class Player
-  attr_accessor :parameters, :rules, :number_of_cards, :wager, :splits, :strategy, :report, :seen_cards
+  attr_accessor :rules, :strategy, :number_of_cards, :wager, :splits, :report, :seen_cards
 
-  def initialize(parameters, rules, number_of_cards)
-    @parameters = parameters
+  def initialize(rules, strategy, number_of_cards)
     @rules = rules
+    @strategy = strategy
     @number_of_cards = number_of_cards
-    @strategy = Strategy.new(parameters.playbook, number_of_cards)
     @wager = Wager.new
     @splits = []
     @report = Report.new
@@ -27,7 +25,7 @@ class Player
   def place_bet(mimic)
     @splits.clear
     @wager.reset
-    @wager.amount_bet = mimic ? MINIMUM_BET : @strategy.get_bet(@seen_cards)
+    @wager.place_bet(mimic ? MINIMUM_BET : @strategy.get_bet(@seen_cards))
   end
 
   def insurance
@@ -46,27 +44,18 @@ class Player
       return
     end
 
-    @strategy.do_play(@seen_cards, @wager.have_cards, @wager.is_pair? ? @wager.get_card_pair : nil, up)
-    if @rules.surrender && @strategy.get_surrender(@seen_cards, @wager.have_cards, up)
-      @strategy.clear
-      @wager.surrender
-      return
-    end
-
-    if (@rules.double_any_two_cards || [10, 11].include?(@wager.hand_total)) && @strategy.get_double(@seen_cards, @wager.have_cards, up)
-      @strategy.clear
+    if @strategy.get_double(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
       @wager.double_bet
       draw_card(@wager, shoe.draw_card)
       return
     end
 
     if @wager.is_pair? && @strategy.get_split(@seen_cards, @wager.get_card_pair, up)
-      @strategy.clear
       split = Wager.new
       @wager.split_hand(split)
       @splits.push(split)
 
-      if @wager.is_pair_of_aces? && !@rules.resplit_aces && !@rules.hit_split_aces
+      if @wager.is_pair_of_aces?
         draw_card(@wager, shoe.draw_card)
         draw_card(split, shoe.draw_card)
         return
@@ -79,40 +68,35 @@ class Player
       return
     end
 
-    stand = @strategy.get_stand(@seen_cards, @wager.have_cards, up)
-    @strategy.clear
+    stand = @strategy.get_stand(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
     until @wager.is_busted? || stand
       # puts "hit #{wager.hand_total}"
       draw_card(@wager, shoe.draw_card)
-      stand = @strategy.get_stand(@seen_cards, @wager.have_cards, up)
+      if not @wager.is_busted?
+        stand = @strategy.get_stand(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
+      end
       # puts "stand #{stand}"
     end
   end
 
   def play_split(wager, shoe, up)
-    if @rules.double_after_split && @strategy.get_double(@seen_cards, wager.have_cards, up)
-      wager.double_bet
+    if wager.is_pair? && @strategy.get_split(@seen_cards, wager.get_card_pair, up)
+      split = Wager.new
+      @splits.push(split)
+      wager.split_hand(split)
       draw_card(wager, shoe.draw_card)
+      play_split(wager, shoe, up)
+      draw_card(split, shoe.draw_card)
+      play_split(split, shoe, up)
       return
     end
 
-    if wager.is_pair?
-      if wager.is_pair_of_aces? && @rules.resplit_aces && @strategy.get_split(@seen_cards, wager.get_card_pair, up)
-        split = Wager.new
-        @splits.push(split)
-        wager.split_hand(split)
-        draw_card(wager, shoe.draw_card)
-        play_split(wager, shoe, up)
-        draw_card(split, shoe.draw_card)
-        play_split(split, shoe, up)
-        return
-      end
-    end
-
-    stand = @strategy.get_stand(@seen_cards, wager.have_cards, up)
+    stand = @strategy.get_stand(@seen_cards, wager.hand_total, wager.is_soft?, up)
     until wager.is_busted? || stand
       draw_card(wager, shoe.draw_card)
-      stand = @strategy.get_stand(@seen_cards, wager.have_cards, up)
+      if not wager.is_busted?
+        stand = @strategy.get_stand(@seen_cards, wager.hand_total, wager.is_soft?, up)
+      end
     end
   end
 
@@ -142,12 +126,6 @@ class Player
   end
 
   def payoff_hand(wager, dealer_blackjack, dealer_busted, dealer_total)
-    if wager.did_surrender?
-      @report.total_bet += wager.amount_bet
-      @report.total_won -= wager.amount_bet / 2
-      return
-    end
-
     if dealer_blackjack
       wager.won_insurance
       wager.push if wager.is_blackjack?

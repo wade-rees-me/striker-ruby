@@ -62,7 +62,3 @@ class Parameters
   end
 end
 
-# Example usage:
-# parameters = Parameters.new("single-deck", "basic", 1, 1000000)
-# parameters.print
-# puts parameters.serialize

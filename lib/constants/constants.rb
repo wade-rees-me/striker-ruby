@@ -25,16 +25,6 @@ MINIMUM_BET = 2
 STATUS_DOT = 25000
 STATUS_LINE = 1000000
 
-# Structure to store HTTP response
-class MemoryStruct
-  attr_accessor :memory, :size
-
-  def initialize
-    @memory = ''
-    @size = 0
-  end
-end
-
 # Function to get environment variables
 def get_rules_url
   ENV['STRIKER_URL_RULES']

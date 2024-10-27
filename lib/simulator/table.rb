@@ -1,5 +1,6 @@
 require_relative '../arguments/parameters'
 require_relative '../table/rules'
+require_relative '../table/strategy'
 require_relative 'player'
 require_relative '../cards/dealer'
 require_relative '../cards/shoe'
@@ -8,11 +9,11 @@ require_relative '../arguments/report'
 class Table
   attr_accessor :parameters, :shoe, :dealer, :player, :report
 
-  def initialize(params, rules)
+  def initialize(params, rules, strategy)
     @parameters = params
     @shoe = Shoe.new(@parameters.number_of_decks, rules.penetration)
     @dealer = Dealer.new(rules.hit_soft_17)
-    @player = Player.new(@parameters, rules, @shoe.number_of_cards)
+    @player = Player.new(rules, strategy, @shoe.number_of_cards)
     @report = Report.new
   end
 
@@ -46,7 +47,7 @@ class Table
 
     @report.end = Time.now.to_i
     @report.duration = @report.end - @report.start
-    puts "      End: table"
+    puts "\n      End: table"
   end
 
   def deal_cards(hand)

@@ -6,13 +6,11 @@ class Hand
     @have_cards = Array.new(13, 0)
     @hand_total = 0
     @soft_ace = 0
-    @hand_surrendered = false
   end
 
   def reset
     @hand_total = 0
     @soft_ace = 0
-    @hand_surrendered = false
     @cards.clear
     @have_cards.fill(0)
   end
@@ -59,14 +57,6 @@ class Hand
     else
       raise "Error: Trying to split a non-pair"
     end
-  end
-
-  def surrender
-    @hand_surrendered = true
-  end
-
-  def did_surrender?
-    @hand_surrendered
   end
 
   private

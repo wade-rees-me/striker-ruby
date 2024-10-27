@@ -40,7 +40,7 @@ class Rules
   end
 
   # Serialize the rules into a JSON string
-  def serialize_rules
+  def serialize
     data = {
       hit_soft_17: @hit_soft_17 ? "true" : "false",
       surrender: @surrender ? "true" : "false",

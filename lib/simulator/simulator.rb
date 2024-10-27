@@ -2,6 +2,7 @@ require 'json'
 require 'net/http'
 require_relative '../arguments/parameters'
 require_relative '../table/rules'
+require_relative '../table/strategy'
 require_relative 'table'
 require_relative '../arguments/report'
 require_relative 'simulation'
@@ -10,10 +11,10 @@ require_relative '../constants/constants'
 class Simulator
   attr_accessor :parameters, :rules, :table, :report
 
-  def initialize(params, rules)
+  def initialize(params, rules, strategy)
     @parameters = params
     @rules = rules
-    @table = Table.new(@parameters, @rules)
+    @table = Table.new(@parameters, @rules, strategy)
     @report = Report.new
   end
 
@@ -32,6 +33,7 @@ class Simulator
     db_table.summary = 'no'
     db_table.simulations = '1'
     db_table.parameters = @parameters.serialize
+    db_table.rules = @rules.serialize
     db_table.rounds = @report.total_rounds.to_s
     db_table.hands = @report.total_hands.to_s
     db_table.total_bet = @report.total_bet.to_s
@@ -91,6 +93,7 @@ class Simulator
       total_time: simulation_data.total_time,
       average_time: simulation_data.average_time,
       parameters: simulation_data.parameters,
+      rules: simulation_data.rules,
       payload: 'n/a'
     }.to_json
 
