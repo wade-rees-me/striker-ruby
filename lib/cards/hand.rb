@@ -1,9 +1,8 @@
 class Hand
-  attr_reader :hand_total, :have_cards
+  attr_reader :hand_total
 
   def initialize
     @cards = []
-    @have_cards = Array.new(13, 0)
     @hand_total = 0
     @soft_ace = 0
   end
@@ -12,7 +11,6 @@ class Hand
     @hand_total = 0
     @soft_ace = 0
     @cards.clear
-    @have_cards.fill(0)
   end
 
   def draw_card(card)
@@ -64,12 +62,10 @@ class Hand
   def calculate_total
     @hand_total = 0
     @soft_ace = 0
-    @have_cards.fill(0)
 
     @cards.each do |card|
       @hand_total += card.value
       @soft_ace += 1 if card.value == 11
-      @have_cards[card.offset] += 1
     end
 
     # Adjust hand total if it's over 21 and there are soft aces

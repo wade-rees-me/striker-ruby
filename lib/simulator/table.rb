@@ -32,16 +32,22 @@ class Table
         @dealer.reset
         @player.place_bet(mimic)
 
-        up_card = deal_cards(@player.wager)
-        @player.insurance if !mimic && up_card.is_ace?
+        deal_cards(@player.wager)
+        @player.insurance if !mimic && @up_card.is_ace?
 
         unless @dealer.hand.is_blackjack?
-          @player.play(up_card, @shoe, mimic)
-          @dealer.play(@shoe) unless @player.busted_or_blackjack?
+          @player.play(@up_card, @shoe, mimic)
+          @player.show_card(@down_card)
+          unless @player.busted_or_blackjack?
+            while !@dealer.should_stand
+              card = @shoe.draw_card
+              @dealer.draw_card(card)
+              @player.show_card(card)
+            end
+          end
         end
 
         @player.payoff(@dealer.hand.is_blackjack?, @dealer.hand.is_busted?, @dealer.hand.hand_total)
-        @player.show_card(up_card)
       end
     end
 
@@ -52,12 +58,13 @@ class Table
 
   def deal_cards(hand)
     @player.draw_card(hand, @shoe.draw_card)
-    up_card = @shoe.draw_card
-    @dealer.draw_card(up_card)
+    @up_card = @shoe.draw_card
+    @dealer.draw_card(@up_card)
+    @player.show_card(@up_card)
+
     @player.draw_card(hand, @shoe.draw_card)
-    @dealer.draw_card(@shoe.draw_card)
-    @player.show_card(up_card)
-    up_card
+    @down_card = @shoe.draw_card
+    @dealer.draw_card(@down_card)
   end
 
   def show(card)

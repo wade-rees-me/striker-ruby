@@ -20,9 +20,7 @@ class Wager < Hand
   end
 
   def place_bet(bet)
-    #puts "place bet %d" % [bet]
     @amount_bet = (([MAXIMUM_BET, [MINIMUM_BET, bet].max].min + 1) / 2) * 2
-    #puts "bet %d" % [@amount_bet]
   end
 
   def double_bet
@@ -31,17 +29,14 @@ class Wager < Hand
 
   def won_blackjack(pays, bet)
     @amount_won = (@amount_bet * pays) / bet
-    #puts "blackajck %d, %d, %d, %d" % [@amount_bet, pays, bet, @amount_won]
   end
 
   def won
     @amount_won = @amount_bet
-    # puts "won"
   end
 
   def lost
     @amount_won = -@amount_bet
-    # puts "lost"
   end
 
   def push

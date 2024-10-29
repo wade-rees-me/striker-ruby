@@ -6,7 +6,7 @@ require_relative '../table/rules'
 require_relative '../table/strategy'
 
 class Player
-  attr_accessor :rules, :strategy, :number_of_cards, :wager, :splits, :report, :seen_cards
+  attr_accessor :rules, :strategy, :number_of_cards, :wager, :splits, :report, :seen_cards, :up_card, :down_card
 
   def initialize(rules, strategy, number_of_cards)
     @rules = rules
