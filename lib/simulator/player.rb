@@ -12,7 +12,7 @@ class Player
     @rules = rules
     @strategy = strategy
     @number_of_cards = number_of_cards
-    @wager = Wager.new
+    @wager = Wager.new(MINIMUM_BET, MAXIMUM_BET)
     @splits = []
     @report = Report.new
     @seen_cards = Array.new(13, 0)
@@ -51,7 +51,7 @@ class Player
     end
 
     if @wager.is_pair? && @strategy.get_split(@seen_cards, @wager.get_card_pair, up)
-      split = Wager.new
+      split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
       @wager.split_hand(split)
       @splits.push(split)
 
@@ -81,7 +81,7 @@ class Player
 
   def play_split(wager, shoe, up)
     if wager.is_pair? && @strategy.get_split(@seen_cards, wager.get_card_pair, up)
-      split = Wager.new
+      split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
       @splits.push(split)
       wager.split_hand(split)
       draw_card(wager, shoe.draw_card)

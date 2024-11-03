@@ -1,8 +1,10 @@
 class Wager < Hand
-  attr_accessor :amount_bet, :amount_won, :insurance_bet, :insurance_won
+  attr_accessor :amount_bet, :amount_won, :insurance_bet, :insurance_won, :minimum_bet, :maximum_bet
 
-  def initialize
+  def initialize(minimum_bet, maximum_bet)
     super()
+    @minimum_bet = minimum_bet
+    @maximum_bet = maximum_bet
     reset
   end
 
@@ -20,7 +22,7 @@ class Wager < Hand
   end
 
   def place_bet(bet)
-    @amount_bet = (([MAXIMUM_BET, [MINIMUM_BET, bet].max].min + 1) / 2) * 2
+    @amount_bet = (([@maximum_bet, [@minimum_bet, bet].max].min + 1) / 2) * 2
   end
 
   def double_bet
