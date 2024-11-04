@@ -43,9 +43,7 @@ class Strategy
   end
 
   def get_bet(seen_cards)
-    true_count = get_true_count(seen_cards, get_running_count(seen_cards))
-    bet = (true_count * 2).clamp(MINIMUM_BET, MAXIMUM_BET)
-    bet.even? ? bet : bet - 1
+    return get_true_count(seen_cards, get_running_count(seen_cards)) * TRUE_COUNT_BET
   end
 
   def get_insurance(seen_cards)
@@ -67,10 +65,6 @@ class Strategy
   def get_stand(seen_cards, total, soft, up)
     true_count = get_true_count(seen_cards, get_running_count(seen_cards))
     table = soft ? @soft_stand : @hard_stand
-    #puts '-------table'
-    #puts table
-    #puts 'table-------'
-    #puts total
     process_value(table[total.to_s][up.offset], true_count, true)
   end
 
@@ -82,7 +76,7 @@ class Strategy
 
   def get_true_count(seen_cards, running_count)
     unseen = @number_of_cards - seen_cards[2..11].sum
-    unseen.positive? ? (running_count.to_f / (unseen / 26.0)).to_i : 0
+    unseen.positive? ? (running_count.to_f / (unseen.to_f / TRUE_COUNT_MULTIPLIER.to_f)).to_i : 0
   end
 
   def process_value(value, true_count, missing_value)

@@ -37,7 +37,6 @@ class Table
 
         unless @dealer.hand.is_blackjack?
           @player.play(@up_card, @shoe, mimic)
-          @player.show_card(@down_card)
           unless @player.busted_or_blackjack?
             while !@dealer.should_stand
               card = @shoe.draw_card
@@ -47,6 +46,7 @@ class Table
           end
         end
 
+        @player.show_card(@down_card)
         @player.payoff(@dealer.hand.is_blackjack?, @dealer.hand.is_busted?, @dealer.hand.hand_total)
       end
     end
