@@ -1,14 +1,28 @@
 require 'net/http'
 require 'json'
 require 'uri'
+require_relative 'chart'
 
 class Strategy
   attr_accessor :playbook, :counts, :bets, :insurance, :soft_double, :hard_double, :pair_split, :soft_stand, :hard_stand
 
   def initialize(decks, strategy, number_of_cards)
     @number_of_cards = number_of_cards
+
+    @soft_double = Chart.new("Soft Double")
+    @hard_double = Chart.new("Hard Double")
+    @pair_split = Chart.new("Pair Split")
+    @soft_stand = Chart.new("Soft Stand")
+    @hard_stand = Chart.new("Hard Stand")
+
     fetch_json("http://localhost:57910/striker/v1/strategy")
     fetch_table(decks, strategy)
+
+    @soft_double.print_chart()
+    @hard_double.print_chart()
+    @pair_split.print_chart()
+    @soft_stand.print_chart()
+    @hard_stand.print_chart()
   end
 
   def fetch_json(url)
@@ -28,11 +42,19 @@ class Strategy
         @counts = json_payload['counts']
         @bets = json_payload['bets']
         @insurance = json_payload['insurance']
-        @soft_double = json_payload['soft-double']
-        @hard_double = json_payload['hard-double']
-        @pair_split = json_payload['pair-split']
-        @soft_stand = json_payload['soft-stand']
-        @hard_stand = json_payload['hard-stand']
+
+        load_table(json_payload["soft-double"], @soft_double)
+        load_table(json_payload["hard-double"], @hard_double)
+        load_table(json_payload["pair-split"], @pair_split)
+        load_table(json_payload["soft-stand"], @soft_stand)
+        load_table(json_payload["hard-stand"], @hard_stand)
+
+        #@soft_double = json_payload['soft-double']
+        #@hard_double = json_payload['hard-double']
+        #@pair_split = json_payload['pair-split']
+        #@soft_stand = json_payload['soft-stand']
+        #@hard_stand = json_payload['hard-stand']
+
         puts @hard_stand
         return
       end
@@ -40,6 +62,14 @@ class Strategy
   rescue JSON::ParserError
     puts 'Error parsing strategy table payload'
     exit(1)
+  end
+
+  def load_table(data, chart)
+    data.each do |key, values|
+      values.each_with_index do |value, index|
+        chart.insert(key, index, value)
+      end
+    end
   end
 
   def get_bet(seen_cards)
@@ -54,18 +84,18 @@ class Strategy
   def get_double(seen_cards, total, soft, up)
     true_count = get_true_count(seen_cards, get_running_count(seen_cards))
     table = soft ? @soft_double : @hard_double
-    process_value(table[total.to_s][up.offset], true_count, false)
+    process_value(table.get_value(total.to_s, up.offset), true_count, false)
   end
 
   def get_split(seen_cards, pair, up)
     true_count = get_true_count(seen_cards, get_running_count(seen_cards))
-    process_value(@pair_split[pair.value.to_s][up.offset], true_count, false)
+    process_value(@pair_split.get_value(pair.key, up.offset), true_count, false)
   end
 
   def get_stand(seen_cards, total, soft, up)
     true_count = get_true_count(seen_cards, get_running_count(seen_cards))
     table = soft ? @soft_stand : @hard_stand
-    process_value(table[total.to_s][up.offset], true_count, true)
+    process_value(table.get_value(total.to_s, up.offset), true_count, true)
   end
 
   private

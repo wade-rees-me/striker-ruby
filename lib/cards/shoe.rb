@@ -9,13 +9,14 @@ class Shoe
     'six' => 6, 'seven' => 7, 'eight' => 8, 'nine' => 9,
     'ten' => 10, 'jack' => 10, 'queen' => 10, 'king' => 10, 'ace' => 11
   }
+  KEYS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 
   def initialize(number_of_decks, penetration)
     @cards = []
     number_of_decks.times do
       SUITS.each do |suit|
         RANKS.each_with_index do |(rank, value), offset|
-          @cards << Card.new(suit, rank, value, offset)
+          @cards << Card.new(suit, rank, KEYS[offset], value, offset)
         end
       end
     end

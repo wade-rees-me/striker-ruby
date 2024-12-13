@@ -35,7 +35,10 @@ class Player
   end
 
   def play(up, shoe, mimic)
-    return if @wager.is_blackjack?
+    if @wager.is_blackjack?
+      @report.total_blackjacks += 1
+      return
+    end
 
     if mimic
       while !mimic_stand
@@ -47,6 +50,7 @@ class Player
     if @strategy.get_double(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
       @wager.double_bet
       draw_card(@wager, shoe.draw_card)
+      @report.total_doubles += 1
       return
     end
 
@@ -54,6 +58,7 @@ class Player
       split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
       @wager.split_hand(split)
       @splits.push(split)
+      @report.total_splits += 1
 
       if @wager.is_pair_of_aces?
         draw_card(@wager, shoe.draw_card)
@@ -83,6 +88,7 @@ class Player
     if wager.is_pair? && @strategy.get_split(@seen_cards, wager.get_card_pair, up)
       split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
       @splits.push(split)
+      @report.total_splits += 1
       wager.split_hand(split)
       draw_card(wager, shoe.draw_card)
       play_split(wager, shoe, up)
@@ -119,6 +125,7 @@ class Player
     if @splits.empty?
       payoff_hand(@wager, dealer_blackjack, dealer_busted, dealer_total)
     else
+      payoff_split(@wager, dealer_busted, dealer_total)
       @splits.each do |split|
         payoff_split(split, dealer_busted, dealer_total)
       end
@@ -137,12 +144,16 @@ class Player
       elsif wager.is_busted?
         # puts "busted #{wager.hand_total}"
         wager.lost
+        @report.total_loses += 1
       elsif dealer_busted || wager.hand_total > dealer_total
         wager.won
+        @report.total_wins += 1
       elsif dealer_total > wager.hand_total
         wager.lost
+        @report.total_loses += 1
       else
         wager.push
+        @report.total_pushes += 1
       end
     end
 
@@ -153,12 +164,16 @@ class Player
   def payoff_split(wager, dealer_busted, dealer_total)
     if wager.is_busted?
       wager.lost
+      @report.total_loses += 1
     elsif dealer_busted || wager.hand_total > dealer_total
       wager.won
+      @report.total_wins += 1
     elsif dealer_total > wager.hand_total
       wager.lost
+      @report.total_loses += 1
     else
       wager.push
+      @report.total_pushes += 1
     end
 
     @report.total_won += wager.amount_won
