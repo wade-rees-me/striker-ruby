@@ -4,6 +4,7 @@ class Arguments
   def initialize(args)
     @mimic_flag = false
     @basic_flag = false
+    @neural_flag = false
     @linear_flag = false
     @polynomial_flag = false
     @high_low_flag = false
@@ -21,6 +22,7 @@ class Arguments
     return "mimic" if @mimic_flag
     return "polynomial" if @polynomial_flag
     return "linear" if @linear_flag
+    return "neural" if @neural_flag
     return "high-low" if @high_low_flag
     return "wong" if @wong_flag
     return "striker" if @striker_flag
@@ -60,6 +62,8 @@ class Arguments
         @mimic_flag = true
       when "-B", "--basic"
         @basic_flag = true
+      when "-N", "--neural"
+        @neural_flag = true
       when "-L", "--linear"
         @linear_flag = true
       when "-P", "--polynomial"
@@ -101,6 +105,7 @@ class Arguments
         -h, --number-of-hands <number of hands>  The number of hands to play in this simulation
         -M, --mimic                              Use the mimic dealer player strategy
         -B, --basic                              Use the basic player strategy
+        -N, --neural                             Use the neural player strategy
         -L, --linear                             Use the liner regression player strategy
         -P, --polynomial                         Use the polynomial regression player strategy
         -H, --high-low                           Use the high low count player strategy
