@@ -112,7 +112,7 @@ class Player
   end
 
   def show_card(card)
-    @seen_cards[card.offset] += 1
+    @seen_cards[card.value] += 1
   end
 
   def busted_or_blackjack?

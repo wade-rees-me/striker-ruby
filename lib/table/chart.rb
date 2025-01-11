@@ -1,6 +1,6 @@
 class Chart
   TABLE_SIZE = 21
-  VALUE_COUNT = 13
+  VALUE_COUNT = 12
 
   # Inner class representing a row in the chart
   class ChartRow
@@ -29,7 +29,7 @@ class Chart
       @rows[index].key = key.upcase
       @next_row += 1
     end
-    @rows[index].values[up] = value.upcase
+    @rows[index].values[2 + up] = value.upcase
   end
 
   # Retrieve a value from the chart
@@ -43,15 +43,15 @@ class Chart
   # Print the chart
   def print_chart()
     puts @name
-    puts "--------2-----3-----4-----5-----6-----7-----8-----9-----T-----J-----Q-----K-----A---"
+    puts "--------------------2-----3-----4-----5-----6-----7-----8-----9-----X-----A---"
     @rows[0...@next_row].each do |row|
-      print "#{row.key} : "
+      print "#{row.key.to_s.rjust(2)} : "
       row.values.each do |value|
-        print "#{value.ljust(4)}, "
+        print "#{value.to_s.rjust(4)}, "
       end
       puts
     end
-    puts "------------------------------------------------------------------------------------"
+    puts "------------------------------------------------------------------------------"
   end
 
   private
@@ -65,19 +65,4 @@ class Chart
     nil
   end
 end
-
-## Example usage
-#chart = Chart.new("Example Chart")
-#
-## Insert some values
-#chart.insert("A", 2, "Hit")
-#chart.insert("B", 3, "Stand")
-#chart.insert("A", 4, "Double")
-#
-## Retrieve a value
-#value = chart.get_value("A", 2)
-#puts "Value at A, 2: #{value}"
-#
-## Print the chart
-#chart.print
 

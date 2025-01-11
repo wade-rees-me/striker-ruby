@@ -9,7 +9,6 @@ class Arguments
     @polynomial_flag = false
     @high_low_flag = false
     @wong_flag = false
-    @striker_flag = false
     @single_deck_flag = false
     @double_deck_flag = false
     @six_shoe_flag = false
@@ -25,7 +24,6 @@ class Arguments
     return "neural" if @neural_flag
     return "high-low" if @high_low_flag
     return "wong" if @wong_flag
-    return "striker" if @striker_flag
     "basic"
   end
 
@@ -72,8 +70,6 @@ class Arguments
         @high_low_flag = true
       when "-W", "--wong"
         @wong_flag = true
-      when "-S", "--striker"
-        @striker_flag = true
       when "-1", "--single-deck"
         @single_deck_flag = true
       when "-2", "--double-deck"
@@ -110,7 +106,6 @@ class Arguments
         -P, --polynomial                         Use the polynomial regression player strategy
         -H, --high-low                           Use the high low count player strategy
         -W, --wong                               Use the Wong count player strategy
-        -S, --striker                            Use the Striker machine learning player strategy
         -1, --single-deck                        Use a single deck of cards and rules
         -2, --double-deck                        Use a double deck of cards and rules
         -6, --six-shoe                           Use a six deck shoe of cards and rules
