@@ -1,11 +1,11 @@
 class Card
-  attr_reader :suit, :rank, :value, :offset
+  attr_reader :suit, :rank, :key, :value
 
-  def initialize(suit, rank, value, offset)
+  def initialize(suit, rank, key, value)
     @suit = suit
     @rank = rank
+    @key = key
     @value = value
-    @offset = offset
   end
 
   def is_ace?
@@ -13,6 +13,6 @@ class Card
   end
 
   def display
-    puts "#{rank} of #{suit} {#{value}, #{offset}}"
+    puts "#{rank} of #{suit} {#{value}}"
   end
 end

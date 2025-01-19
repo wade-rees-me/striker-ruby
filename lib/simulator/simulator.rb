@@ -48,6 +48,12 @@ class Simulator
     puts "    Number of rounds: #{@report.total_rounds}"
     puts "    Total bet: #{@report.total_bet} #{format('%+04.3f average bet per hand', @report.total_bet.to_f / @report.total_hands)}"
     puts "    Total won: #{@report.total_won} #{format('%+04.3f average win per hand', @report.total_won.to_f / @report.total_hands)}"
+    puts "    Number of blackjacks: #{@report.total_blackjacks} #{format('%+04.3f percent of total hands', @report.total_blackjacks.to_f / @report.total_hands * 100.0)}"
+    puts "    Number of doubles: #{@report.total_doubles} #{format('%+04.3f percent of total hands', @report.total_doubles.to_f / @report.total_hands * 100.0)}"
+    puts "    Number of splits: #{@report.total_splits} #{format('%+04.3f percent of total hands', @report.total_splits.to_f / @report.total_hands * 100.0)}"
+    puts "    Number of wins: #{@report.total_wins} #{format('%+04.3f percent of total hands', @report.total_wins.to_f / @report.total_hands * 100.0)}"
+    puts "    Number of pushes: #{@report.total_pushes} #{format('%+04.3f percent of total hands', @report.total_pushes.to_f / @report.total_hands * 100.0)}"
+    puts "    Number of loses: #{@report.total_loses} #{format('%+04.3f percent of total hands', @report.total_loses.to_f / @report.total_hands * 100.0)}"
     puts "    Total time: #{db_table.total_time} seconds"
     puts "    Average time: #{db_table.average_time} per 1,000,000 hands"
     puts "    Player advantage: #{db_table.advantage}"
@@ -70,6 +76,12 @@ class Simulator
     @report.total_won += @table.player.report.total_won
     @report.total_rounds += @table.report.total_rounds
     @report.total_hands += @table.report.total_hands
+    @report.total_blackjacks += @table.player.report.total_blackjacks
+    @report.total_doubles += @table.player.report.total_doubles
+    @report.total_splits += @table.player.report.total_splits
+    @report.total_wins += @table.player.report.total_wins
+    @report.total_pushes += @table.player.report.total_pushes
+    @report.total_loses += @table.player.report.total_loses
     @report.duration += @table.report.duration
   end
 
