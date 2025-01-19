@@ -4,9 +4,9 @@ require 'securerandom'
 
 class Parameters
   MAX_STRING_SIZE = 128
-  STRIKER_WHO_AM_I = 'striker-ruby'
-  STRIKER_VERSION = 'v01.02.02'
-  TIME_LAYOUT = '%Y-%m-%d %H:%M:%S %z'
+  #STRIKER_WHO_AM_I = 'striker-ruby'
+  #STRIKER_VERSION = 'v01.02.02'
+  #TIME_LAYOUT = '%Y-%m-%d %H:%M:%S %z'
 
   attr_accessor :name, :playbook, :processor, :timestamp, :decks, :strategy, :number_of_decks, :number_of_hands
 
