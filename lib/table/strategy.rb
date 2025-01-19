@@ -15,15 +15,18 @@ class Strategy
     @soft_stand = Chart.new("Soft Stand")
     @hard_stand = Chart.new("Hard Stand")
 
-    fetch_json("http://localhost:57910/striker/v1/strategy")
-    fetch_table(decks, strategy)
+    puts strategy
+    if "mimic" != strategy
+      fetch_json("http://localhost:57910/striker/v1/strategy")
+      fetch_table(decks, strategy)
 
-    @soft_double.print_chart()
-    @hard_double.print_chart()
-    @pair_split.print_chart()
-    @soft_stand.print_chart()
-    @hard_stand.print_chart()
-    print_counts()
+      @soft_double.print_chart()
+      @hard_double.print_chart()
+      @pair_split.print_chart()
+      @soft_stand.print_chart()
+      @hard_stand.print_chart()
+      print_counts()
+    end
   end
 
   def fetch_json(url)
