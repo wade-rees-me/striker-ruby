@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../cards/shoe'
 require_relative '../cards/hand'
 require_relative '../arguments/report'
@@ -14,7 +16,7 @@ class Player
     @number_of_cards = number_of_cards
     @wager = Wager.new(MINIMUM_BET, MAXIMUM_BET)
     @splits = []
-    @report = Report.new
+    @report = Report.new(nil)
     @seen_cards = Array.new(13, 0)
   end
 
@@ -29,38 +31,36 @@ class Player
   end
 
   def insurance
-    if @strategy.get_insurance(@seen_cards)
-      @wager.insurance_bet = @wager.amount_bet / 2
-    end
+    return unless @strategy.get_insurance(@seen_cards)
+
+    @wager.insurance_bet = @wager.amount_bet / 2
   end
 
   def play(up, shoe, mimic)
-    if @wager.is_blackjack?
+    if @wager.blackjack?
       @report.total_blackjacks += 1
       return
     end
 
     if mimic
-      while !mimic_stand
-        draw_card(@wager, shoe.draw_card)
-      end
+      draw_card(@wager, shoe.draw_card) until mimic_stand
       return
     end
 
-    if @strategy.get_double(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
+    if @strategy.get_double(@seen_cards, @wager.hand_total, @wager.soft?, up)
       @wager.double_bet
       draw_card(@wager, shoe.draw_card)
       @report.total_doubles += 1
       return
     end
 
-    if @wager.is_pair? && @strategy.get_split(@seen_cards, @wager.get_card_pair, up)
+    if @wager.pair? && @strategy.get_split(@seen_cards, @wager.card_pair, up)
       split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
       @wager.split_hand(split)
       @splits.push(split)
       @report.total_splits += 1
 
-      if @wager.is_pair_of_aces?
+      if @wager.pair_of_aces?
         draw_card(@wager, shoe.draw_card)
         draw_card(split, shoe.draw_card)
         return
@@ -73,19 +73,17 @@ class Player
       return
     end
 
-    stand = @strategy.get_stand(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
-    until @wager.is_busted? || stand
+    stand = @strategy.get_stand(@seen_cards, @wager.hand_total, @wager.soft?, up)
+    until @wager.busted? || stand
       # puts "hit #{wager.hand_total}"
       draw_card(@wager, shoe.draw_card)
-      if not @wager.is_busted?
-        stand = @strategy.get_stand(@seen_cards, @wager.hand_total, @wager.is_soft?, up)
-      end
+      stand = @strategy.get_stand(@seen_cards, @wager.hand_total, @wager.soft?, up) unless @wager.busted?
       # puts "stand #{stand}"
     end
   end
 
   def play_split(wager, shoe, up)
-    if wager.is_pair? && @strategy.get_split(@seen_cards, wager.get_card_pair, up)
+    if wager.pair? && @strategy.get_split(@seen_cards, wager.card_pair, up)
       split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
       @splits.push(split)
       @report.total_splits += 1
@@ -97,12 +95,10 @@ class Player
       return
     end
 
-    stand = @strategy.get_stand(@seen_cards, wager.hand_total, wager.is_soft?, up)
-    until wager.is_busted? || stand
+    stand = @strategy.get_stand(@seen_cards, wager.hand_total, wager.soft?, up)
+    until wager.busted? || stand
       draw_card(wager, shoe.draw_card)
-      if not wager.is_busted?
-        stand = @strategy.get_stand(@seen_cards, wager.hand_total, wager.is_soft?, up)
-      end
+      stand = @strategy.get_stand(@seen_cards, wager.hand_total, wager.soft?, up) unless wager.busted?
     end
   end
 
@@ -116,9 +112,9 @@ class Player
   end
 
   def busted_or_blackjack?
-    return @wager.is_busted? || @wager.is_blackjack? if @splits.empty?
+    return @wager.busted? || @wager.blackjack? if @splits.empty?
 
-    @splits.all?(&:is_busted?)
+    @splits.all?(&:busted?)
   end
 
   def payoff(dealer_blackjack, dealer_busted, dealer_total)
@@ -135,13 +131,13 @@ class Player
   def payoff_hand(wager, dealer_blackjack, dealer_busted, dealer_total)
     if dealer_blackjack
       wager.won_insurance
-      wager.push if wager.is_blackjack?
-      wager.lost unless wager.is_blackjack?
+      wager.push if wager.blackjack?
+      wager.lost unless wager.blackjack?
     else
       wager.lost_insurance
-      if wager.is_blackjack?
+      if wager.blackjack?
         wager.won_blackjack(@rules.blackjack_pays, @rules.blackjack_bets)
-      elsif wager.is_busted?
+      elsif wager.busted?
         # puts "busted #{wager.hand_total}"
         wager.lost
         @report.total_loses += 1
@@ -162,7 +158,7 @@ class Player
   end
 
   def payoff_split(wager, dealer_busted, dealer_total)
-    if wager.is_busted?
+    if wager.busted?
       wager.lost
       @report.total_loses += 1
     elsif dealer_busted || wager.hand_total > dealer_total
@@ -181,7 +177,7 @@ class Player
   end
 
   def mimic_stand
-    return false if @wager.is_soft_17?
+    return false if @wager.soft_seventeen?
 
     @wager.hand_total >= 17
   end

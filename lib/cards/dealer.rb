@@ -1,8 +1,12 @@
-class Dealer
-  attr_accessor :hand, :hit_soft_17
+# frozen_string_literal: true
 
-  def initialize(hit_soft_17 = true)
-    @hit_soft_17 = hit_soft_17
+# Represents the dealer in a game of Blackjack.
+# Handles drawing cards, checking soft 17 logic, and hand management.
+class Dealer
+  attr_accessor :hand, :hit_soft_seventeen
+
+  def initialize(hit_soft_seventeen)
+    @hit_soft_seventeen = hit_soft_seventeen
     @hand = Hand.new
     reset
   end
@@ -16,7 +20,8 @@ class Dealer
   end
 
   def should_stand
-    return false if @hit_soft_17 && @hand.is_soft_17?
+    return false if @hit_soft_seventeen && @hand.soft_seventeen?
+
     @hand.hand_total >= 17
   end
 end

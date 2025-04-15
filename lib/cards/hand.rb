@@ -1,3 +1,8 @@
+# frozen_string_literal: true
+
+# Represents a hand of cards in a Blackjack game.
+# Tracks card totals, checks for special hands (e.g., blackjack, pair),
+# and handles logic such as soft totals and busts.
 class Hand
   attr_reader :hand_total
 
@@ -19,42 +24,40 @@ class Hand
     card
   end
 
-  def is_blackjack?
+  def blackjack?
     @cards.size == 2 && @hand_total == 21
   end
 
-  def is_pair?
+  def pair?
     @cards.size == 2 && @cards[0].rank == @cards[1].rank
   end
 
-  def get_card_pair
+  def card_pair
     @cards[0]
   end
 
-  def is_pair_of_aces?
-    is_pair? && @cards[0].rank == 'ace'
+  def pair_of_aces?
+    pair? && @cards[0].rank == 'ace'
   end
 
-  def is_busted?
+  def busted?
     @hand_total > 21
   end
 
-  def is_soft?
-    @soft_ace > 0
+  def soft?
+    @soft_ace.positive?
   end
 
-  def is_soft_17?
-    @hand_total == 17 && is_soft?
+  def soft_seventeen?
+    @hand_total == 17 && soft?
   end
 
   def split_pair
-    if is_pair?
-      card = @cards.pop
-      calculate_total
-      card
-    else
-      raise "Error: Trying to split a non-pair"
-    end
+    raise 'Error: Trying to split a non-pair' unless pair?
+
+    card = @cards.pop
+    calculate_total
+    card
   end
 
   private
@@ -69,7 +72,7 @@ class Hand
     end
 
     # Adjust hand total if it's over 21 and there are soft aces
-    while @hand_total > 21 && @soft_ace > 0
+    while @hand_total > 21 && @soft_ace.positive?
       @hand_total -= 10
       @soft_ace -= 1
     end
