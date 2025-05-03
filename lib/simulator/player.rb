@@ -56,16 +56,19 @@ class Player
 
     if @wager.pair? && @strategy.get_split(@seen_cards, @wager.card_pair, up)
       split = Wager.new(MINIMUM_BET, MAXIMUM_BET)
-      @wager.split_hand(split)
-      @splits.push(split)
       @report.total_splits += 1
 
       if @wager.pair_of_aces?
+        @report.total_splits_ace += 1
+        @wager.split_hand(split)
+        @splits.push(split)
         draw_card(@wager, shoe.draw_card)
         draw_card(split, shoe.draw_card)
         return
       end
 
+      @wager.split_hand(split)
+      @splits.push(split)
       draw_card(@wager, shoe.draw_card)
       play_split(@wager, shoe, up)
       draw_card(split, shoe.draw_card)

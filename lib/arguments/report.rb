@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Report
-  attr_accessor :total_rounds, :total_hands, :total_blackjacks, :total_doubles, :total_splits, :total_wins,
+  attr_accessor :total_rounds, :total_hands, :total_blackjacks, :total_doubles, :total_splits, :total_splits_ace, :total_wins,
                 :total_pushes, :total_loses, :total_bet, :total_won, :start, :end, :duration
 
   # Constructor
@@ -25,6 +25,7 @@ class Report
     @total_blackjacks = 0
     @total_doubles = 0
     @total_splits = 0
+    @total_splits_ace = 0
     @total_wins = 0
     @total_pushes = 0
     @total_loses = 0
@@ -47,6 +48,7 @@ class Report
     @total_blackjacks += other.total_blackjacks
     @total_doubles   += other.total_doubles
     @total_splits    += other.total_splits
+    @total_splits_ace += other.total_splits_ace
     @total_wins      += other.total_wins
     @total_loses     += other.total_loses
     @total_pushes    += other.total_pushes
@@ -73,6 +75,8 @@ class Report
     puts format('    %-26s: %17s %s', 'Number of doubles', format('%d', @total_doubles).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'), average_doubles)
     average_splits = format('%+08.3f %% of total hands', @total_splits.to_f / @total_hands * 100.0)
     puts format('    %-26s: %17s %s', 'Number of splits', format('%d', @total_splits).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'), average_splits)
+    average_splits_ace = format('%+08.3f %% of total hands', @total_splits_ace.to_f / @total_hands * 100.0)
+    puts format('    %-26s: %17s %s', 'Number of splits - Aces', format('%d', @total_splits_ace).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'), average_splits_ace)
     average_wins = format('%+08.3f %% of total hands', @total_wins.to_f / @total_hands * 100.0)
     puts format('    %-26s: %17s %s', 'Number of wins', format('%d', @total_wins).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'), average_wins)
     average_pushes = format('%+08.3f %% of total hands', @total_pushes.to_f / @total_hands * 100.0)
@@ -117,6 +121,7 @@ class Report
       total_blackjacks: @total_blackjacks,
       total_doubles: @total_doubles,
       total_splits: @total_splits,
+      total_splits_ace: @total_splits_ace,
       total_wins: @total_wins,
       total_loses: @total_loses,
       total_pushes: @total_pushes,

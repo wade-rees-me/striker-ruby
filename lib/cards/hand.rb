@@ -29,7 +29,7 @@ class Hand
   end
 
   def pair?
-    @cards.size == 2 && @cards[0].rank == @cards[1].rank
+    @cards.size == 2 && @cards[0].value == @cards[1].value
   end
 
   def card_pair
@@ -37,7 +37,7 @@ class Hand
   end
 
   def pair_of_aces?
-    pair? && @cards[0].rank == 'ace'
+    pair? && @cards[0].ace?
   end
 
   def busted?
