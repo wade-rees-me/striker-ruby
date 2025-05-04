@@ -59,16 +59,21 @@ end
 class Arguments
   attr_reader :number_of_hands
 
-   STRATEGY_MAP = {
+  STRATEGY_MAP = {
     mimic: 'mimic',
-    basic: 'basic'
-  }
+    linear: 'linear',
+    polynomial: 'polynomial',
+    neural: 'neural',
+    basic: 'basic',
+    high_low: 'high-low',
+    wong: 'wong'
+  }.freeze
 
-   DECK_MAP = {
+  DECK_MAP = {
     single: 1,
     double: 2,
     shoe: 6
-  }
+  }.freeze
 
   def initialize(args)
     @flags = {}

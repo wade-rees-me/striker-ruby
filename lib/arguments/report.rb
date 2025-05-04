@@ -91,6 +91,11 @@ class Report
   end
 
   def insert
+    unless my_computer?
+      puts '    This code is restricted to running only on my computer.'
+      return
+    end
+
     if @total_hands < NUMBER_OF_HANDS_DATABASE
       puts format(
         "    Error: Not enough hands played (%<hands>s). Minimum required is %<min>s\n",
