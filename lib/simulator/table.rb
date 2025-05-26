@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../arguments/parameters'
 require_relative '../table/rules'
 require_relative '../table/strategy'
@@ -12,13 +14,12 @@ class Table
   def initialize(params, rules, strategy)
     @parameters = params
     @shoe = Shoe.new(@parameters.number_of_decks, rules.penetration)
-    @dealer = Dealer.new(rules.hit_soft_17)
+    @dealer = Dealer.new(rules.hit_soft_seventeen)
     @player = Player.new(rules, strategy, @shoe.number_of_cards)
-    @report = Report.new
+    @report = Report.new(nil)
   end
 
   def session(mimic)
-    puts "      Start: table, playing #{@parameters.number_of_hands} hands"
     @report.start = Time.now.to_i
 
     while @report.total_hands < @parameters.number_of_hands
@@ -27,18 +28,18 @@ class Table
       @player.shuffle
       @report.total_rounds += 1
 
-      while !@shoe.should_shuffle?
+      until @shoe.should_shuffle?
         @report.total_hands += 1
         @dealer.reset
         @player.place_bet(mimic)
 
         deal_cards(@player.wager)
-        @player.insurance if !mimic && @up_card.is_ace?
+        @player.insurance if !mimic && @up_card.ace?
 
-        unless @dealer.hand.is_blackjack?
+        unless @dealer.hand.blackjack?
           @player.play(@up_card, @shoe, mimic)
           unless @player.busted_or_blackjack?
-            while !@dealer.should_stand
+            until @dealer.should_stand
               card = @shoe.draw_card
               @dealer.draw_card(card)
               @player.show_card(card)
@@ -47,13 +48,13 @@ class Table
         end
 
         @player.show_card(@down_card)
-        @player.payoff(@dealer.hand.is_blackjack?, @dealer.hand.is_busted?, @dealer.hand.hand_total)
+        @player.payoff(@dealer.hand.blackjack?, @dealer.hand.busted?, @dealer.hand.hand_total)
       end
     end
+    print "\r"
 
     @report.end = Time.now.to_i
     @report.duration = @report.end - @report.start
-    puts "\n      End: table"
   end
 
   def deal_cards(hand)
@@ -74,17 +75,11 @@ class Table
   private
 
   def status(round, hand)
-    if round == 0
-      print "        "
-    end
+    return unless (round % 100_000).zero?
 
-    if (round + 1) % STATUS_DOT == 0
-      print "."
-    end
-
-    if (round + 1) % STATUS_LINE == 0
-      puts " : #{round + 1} (rounds), #{hand} (hands)"
-      print "        "
-    end
+    print format("\r    Rounds: [%13s] Hands: [%13s]: Simulating...",
+                 round.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'),
+                 hand.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
+    $stdout.flush
   end
 end

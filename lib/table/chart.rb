@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Chart
   TABLE_SIZE = 21
   VALUE_COUNT = 12
@@ -7,8 +9,8 @@ class Chart
     attr_accessor :key, :values
 
     def initialize
-      @key = "--"
-      @values = Array.new(VALUE_COUNT, "---")
+      @key = '--'
+      @values = Array.new(VALUE_COUNT, '---')
     end
   end
 
@@ -22,9 +24,8 @@ class Chart
   def insert(key, up, value)
     index = get_row(key)
     if index.nil?
-      if @next_row >= TABLE_SIZE
-        raise "No more space in the chart"
-      end
+      raise 'No more space in the chart' if @next_row >= TABLE_SIZE
+
       index = @next_row
       @rows[index].key = key.upcase
       @next_row += 1
@@ -41,17 +42,17 @@ class Chart
   end
 
   # Print the chart
-  def print_chart()
+  def print_chart
     puts @name
-    puts "--------------------2-----3-----4-----5-----6-----7-----8-----9-----X-----A---"
+    puts '--------------------2-----3-----4-----5-----6-----7-----8-----9-----X-----A---'
     @rows[0...@next_row].each do |row|
       print "#{row.key.to_s.rjust(2)} : "
-      row.values.each do |value|
+      row.each_value do |value|
         print "#{value.to_s.rjust(4)}, "
       end
       puts
     end
-    puts "------------------------------------------------------------------------------"
+    puts '------------------------------------------------------------------------------'
   end
 
   private
@@ -65,4 +66,3 @@ class Chart
     nil
   end
 end
-
