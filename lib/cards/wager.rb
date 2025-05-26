@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# Wager represents a hand in Blackjack with additional betting information.
+# Inherits from Hand and tracks the bet amount, winnings, and insurance.
 class Wager < Hand
   attr_accessor :amount_bet, :amount_won, :insurance_bet, :insurance_won, :minimum_bet, :maximum_bet
 
@@ -9,7 +13,7 @@ class Wager < Hand
   end
 
   def reset
-    super()  # Reset the Hand
+    super() # Reset the Hand
     @amount_bet = 0
     @amount_won = 0
     @insurance_bet = 0

@@ -1,7 +1,90 @@
+# frozen_string_literal: true
+
+# The FlagParser class is responsible for handling the parsing of command-line flags
+# for the striker program. It takes in a flag as an argument and updates the
+# corresponding flag in a provided hash. If an invalid flag is provided, it raises
+# an error.
+#
+# Example usage:
+#   FlagParser.parse('-M', flags)
+#
+# This class helps decouple the flag parsing logic from the main Arguments class,
+# improving readability and maintainability of the code.
+class FlagParser
+  FLAG_MAP = {
+    '-M' => :mimic,
+    '--mimic' => :mimic,
+    '-B' => :basic,
+    '--basic' => :basic,
+    '-N' => :neural,
+    '--neural' => :neural,
+    '-L' => :linear,
+    '--linear' => :linear,
+    '-P' => :polynomial,
+    '--polynomiam' => :polynomial,
+    '-H' => :high_low,
+    '--high-low' => :high_low,
+    '-W' => :wong,
+    '--wong' => :wong,
+    '-1' => :single_deck,
+    '--single-deck' => :single_deck,
+    '-2' => :double_deck,
+    '--double-deck' => :double_deck,
+    '-6' => :six_shoe,
+    '--six-shoe' => :six_shoe
+  }.freeze
+
+  def self.initialize(args)
+    @args = args
+    @results = {} # ✅ initialize the hash here
+  end
+
+  def self.parse(flag, flags)
+    raise "Error: Invalid argument: #{flag}" unless FLAG_MAP.key?(flag)
+
+    flags[FLAG_MAP[flag]] = true
+  end
+end
+
+# The Arguments class is responsible for parsing and managing command-line arguments
+# passed to the program. It processes different flags and provides easy access to
+# the configurations needed for the simulation.
+#
+# Example usage:
+#   arguments = Arguments.new(ARGV)
+#   puts arguments.number_of_hands
+#
+# This class helps in making the command-line interface user-friendly by
+# providing useful defaults and handling user input gracefully.
 class Arguments
   attr_reader :number_of_hands
 
+  STRATEGY_MAP = {
+    mimic: 'mimic',
+    linear: 'linear',
+    polynomial: 'polynomial',
+    neural: 'neural',
+    basic: 'basic',
+    high_low: 'high-low',
+    wong: 'wong'
+  }.freeze
+
+  DECK_MAP = {
+    single: 1,
+    double: 2,
+    shoe: 6
+  }.freeze
+
   def initialize(args)
+    @flags = {}
+    @number_of_hands = NUMBER_OF_HANDS_DEFAULT
+    initialize_flags
+    FlagParser.initialize(args)
+    parse_arguments(args)
+  end
+
+  # Helper method to initialize flags
+  def initialize_flags
     @mimic_flag = false
     @basic_flag = false
     @neural_flag = false
@@ -12,31 +95,24 @@ class Arguments
     @single_deck_flag = false
     @double_deck_flag = false
     @six_shoe_flag = false
-    @number_of_hands = DEFAULT_NUMBER_OF_HANDS
-
-    parse_arguments(args)
   end
 
-  def get_strategy
-    return "mimic" if @mimic_flag
-    return "polynomial" if @polynomial_flag
-    return "linear" if @linear_flag
-    return "neural" if @neural_flag
-    return "high-low" if @high_low_flag
-    return "wong" if @wong_flag
-    "basic"
+  def strategy
+    STRATEGY_MAP.find { |key, _| @flags[key] }&.last || 'basic'
   end
 
-  def get_decks
-    return "double-deck" if @double_deck_flag
-    return "six-shoe" if @six_shoe_flag
-    "single-deck"
+  def decks
+    DECK_MAP.find { |key, _| @flags[key] }&.last || 'single-deck'
   end
 
-  def get_number_of_decks
-    return 2 if @double_deck_flag
-    return 6 if @six_shoe_flag
-    1
+  def number_of_decks
+    if @flags[:double_deck]
+      2
+    elsif @flags[:six_shoe]
+      6
+    else
+      1
+    end
   end
 
   private
@@ -50,42 +126,26 @@ class Arguments
       end
 
       case arg
-      when "-h", "--number-of-hands"
+      when '-h', '--number-of-hands'
         @number_of_hands = args[i + 1].to_i
-        if @number_of_hands < MINIMUM_NUMBER_OF_HANDS || @number_of_hands > MAXIMUM_NUMBER_OF_HANDS
-          raise "Number of hands must be between #{MINIMUM_NUMBER_OF_HANDS} and #{MAXIMUM_NUMBER_OF_HANDS}"
-        end
+        validate_number_of_hands
         skip_next = true
-      when "-M", "--mimic"
-        @mimic_flag = true
-      when "-B", "--basic"
-        @basic_flag = true
-      when "-N", "--neural"
-        @neural_flag = true
-      when "-L", "--linear"
-        @linear_flag = true
-      when "-P", "--polynomial"
-        @polynomial_flag = true
-      when "-H", "--high-low"
-        @high_low_flag = true
-      when "-W", "--wong"
-        @wong_flag = true
-      when "-1", "--single-deck"
-        @single_deck_flag = true
-      when "-2", "--double-deck"
-        @double_deck_flag = true
-      when "-6", "--six-shoe"
-        @six_shoe_flag = true
-      when "--help"
+      when '--help'
         print_help_message
         exit
-      when "--version"
+      when '--version'
         print_version
         exit
       else
-        raise "Error: Invalid argument: #{arg}"
+        FlagParser.parse(arg, @flags)
       end
     end
+  end
+
+  def validate_number_of_hands
+    return unless @number_of_hands < NUMBER_OF_HANDS_MINIMUM || @number_of_hands > NUMBER_OF_HANDS_MAXIMUM
+
+    raise "Number of hands must be between #{NUMBER_OF_HANDS_MINIMUM} and #{NUMBER_OF_HANDS_MIXIMUM}"
   end
 
   def print_version

@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# Represents a playing card used in a game of Blackjack.
+# Stores suit, rank, key identifier, and numeric value.
 class Card
   attr_reader :suit, :rank, :key, :value
 
@@ -8,7 +12,7 @@ class Card
     @value = value
   end
 
-  def is_ace?
+  def ace?
     value == 11
   end
 
