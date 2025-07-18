@@ -13,6 +13,7 @@ class Report
     @strategy = parameters&.strategy
     @decks = parameters&.decks
     @epoch = parameters&.epoch
+    @threads = 1
     initialize_time
     initialize_totals
   end
@@ -29,7 +30,6 @@ class Report
     @total_wins = 0
     @total_pushes = 0
     @total_loses = 0
-    @total_threads = 1
   end
 
   def initialize_time
@@ -56,12 +56,11 @@ class Report
 
   def finish
     @end = Time.now.to_i
-    @duration = @end - @start;
-    @advantage = @total_won.to_f / @total_bet.to_f * 100.0;
-    @per_billion = @duration * BILLION / @total_hands;
+    @duration = @end - @start
+    @advantage = @total_won.to_f / @total_bet * 100.0
+    @per_billion = @duration * BILLION / @total_hands
   end
 
-# Print out the results
   def print
     puts format('    %-26s: %17s', 'Number of hands', format('%d', @total_hands).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
     puts format('    %-26s: %17s', 'Number of rounds', format('%d', @total_rounds).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
@@ -84,7 +83,7 @@ class Report
     average_loses = format('%+08.3f %% of total hands', @total_loses.to_f / @total_hands * 100.0)
     puts format('    %-26s: %17s %s', 'Number of loses', format('%d', @total_loses).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'), average_loses)
     puts format('    %-26s: %17s %s seconds', 'Total time', '', format('%d', @duration).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
-    puts format('    %-26s: %17s %s seconds', 'Number of threads', '', format('%d', @total_threads).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
+    puts format('    %-26s: %17s %s seconds', 'Number of threads', '', format('%d', @threads).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
     puts format('    %-26s: %17s seconds per %s hands', 'Average time', format('%d', @per_billion).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'),
                 format('%d', BILLION).to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,'))
     puts format('    %-26s: %17s %+08.3f %%', 'Player advantage', '', @advantage)
@@ -119,8 +118,8 @@ class Report
       playbook: @playbook,
       decks: @decks,
       strategy: @strategy,
-      rounds: @rounds,
-      hands: @hands,
+      rounds: @total_rounds,
+      hands: @total_hands,
       total_bet: @total_bet,
       total_won: @total_won,
       total_blackjacks: @total_blackjacks,

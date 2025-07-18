@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative '../help/help_message'
+
 # The FlagParser class is responsible for handling the parsing of command-line flags
 # for the striker program. It takes in a flag as an argument and updates the
 # corresponding flag in a provided hash. If an invalid flag is provided, it raises
@@ -12,26 +14,26 @@
 # improving readability and maintainability of the code.
 class FlagParser
   FLAG_MAP = {
-    '-M' => :mimic,
-    '--mimic' => :mimic,
-    '-B' => :basic,
-    '--basic' => :basic,
-    '-N' => :neural,
-    '--neural' => :neural,
-    '-L' => :linear,
-    '--linear' => :linear,
-    '-P' => :polynomial,
-    '--polynomiam' => :polynomial,
-    '-H' => :high_low,
-    '--high-low' => :high_low,
-    '-W' => :wong,
-    '--wong' => :wong,
-    '-1' => :single_deck,
-    '--single-deck' => :single_deck,
-    '-2' => :double_deck,
-    '--double-deck' => :double_deck,
-    '-6' => :six_shoe,
-    '--six-shoe' => :six_shoe
+    '-M' => :mimic_flag,
+    '--mimic' => :mimic_flag,
+    '-B' => :basic_flag,
+    '--basic' => :basic_flag,
+    '-N' => :neural_flag,
+    '--neural' => :neural_flag,
+    '-L' => :linear_flag,
+    '--linear' => :linear_flag,
+    '-P' => :polynomial_flag,
+    '--polynomial' => :polynomial_flag,
+    '-H' => :high_low_flag,
+    '--high-low' => :high_low_flag,
+    '-W' => :wong_flag,
+    '--wong' => :wong_flag,
+    '-1' => :single_deck_flag,
+    '--single-deck' => :single_deck_flag,
+    '-2' => :double_deck_flag,
+    '--double-deck' => :double_deck_flag,
+    '-6' => :six_shoe_flag,
+    '--six-shoe' => :six_shoe_flag
   }.freeze
 
   def self.initialize(args)
@@ -40,9 +42,13 @@ class FlagParser
   end
 
   def self.parse(flag, flags)
-    raise "Error: Invalid argument: #{flag}" unless FLAG_MAP.key?(flag)
-
-    flags[FLAG_MAP[flag]] = true
+    if FLAG_MAP.key?(flag)
+      flags[FLAG_MAP[flag]] = true
+    else
+      puts "Error: Invalid argument: #{flag}"
+      HelpMessage.print
+      exit
+    end
   end
 end
 
@@ -56,23 +62,24 @@ end
 #
 # This class helps in making the command-line interface user-friendly by
 # providing useful defaults and handling user input gracefully.
+# # frozen_string_literal: true
 class Arguments
   attr_reader :number_of_hands
 
   STRATEGY_MAP = {
-    mimic: 'mimic',
-    linear: 'linear',
-    polynomial: 'polynomial',
-    neural: 'neural',
-    basic: 'basic',
-    high_low: 'high-low',
-    wong: 'wong'
+    mimic_flag: 'mimic',
+    linear_flag: 'linear',
+    polynomial_flag: 'polynomial',
+    neural_flag: 'neural',
+    basic_flag: 'basic',
+    high_low_flag: 'high-low',
+    wong_flag: 'wong'
   }.freeze
 
   DECK_MAP = {
-    single: 1,
-    double: 2,
-    shoe: 6
+    single_deck_flag: 'single-deck',
+    double_deck_flag: 'double-deck',
+    six_shoe_flag: 'six-shoe'
   }.freeze
 
   def initialize(args)
@@ -83,7 +90,6 @@ class Arguments
     parse_arguments(args)
   end
 
-  # Helper method to initialize flags
   def initialize_flags
     @mimic_flag = false
     @basic_flag = false
@@ -106,9 +112,9 @@ class Arguments
   end
 
   def number_of_decks
-    if @flags[:double_deck]
+    if @flags[:double_deck_flag]
       2
-    elsif @flags[:six_shoe]
+    elsif @flags[:six_shoe_flag]
       6
     else
       1
@@ -118,57 +124,37 @@ class Arguments
   private
 
   def parse_arguments(args)
-    skip_next = false
     args.each_with_index do |arg, i|
-      if skip_next
-        skip_next = false
-        next
-      end
+      next if @skip_next
 
       case arg
-      when '-h', '--number-of-hands'
-        @number_of_hands = args[i + 1].to_i
-        validate_number_of_hands
-        skip_next = true
-      when '--help'
-        print_help_message
-        exit
-      when '--version'
-        print_version
-        exit
-      else
-        FlagParser.parse(arg, @flags)
+      when '-h', '--number-of-hands' then handle_number_of_hands(args[i + 1])
+      when '--help'                  then exit_with_help
+      when '--version'               then exit_with_version
+      else FlagParser.parse(arg, @flags)
       end
     end
+  end
+
+  def handle_number_of_hands(value)
+    @number_of_hands = value.to_i
+    validate_number_of_hands
+    @skip_next = true
+  end
+
+  def exit_with_help
+    HelpMessage.print
+    exit
+  end
+
+  def exit_with_version
+    puts "#{STRIKER_WHO_AM_I}: version: #{STRIKER_VERSION}"
+    exit
   end
 
   def validate_number_of_hands
     return unless @number_of_hands < NUMBER_OF_HANDS_MINIMUM || @number_of_hands > NUMBER_OF_HANDS_MAXIMUM
 
-    raise "Number of hands must be between #{NUMBER_OF_HANDS_MINIMUM} and #{NUMBER_OF_HANDS_MIXIMUM}"
-  end
-
-  def print_version
-    puts "#{STRIKER_WHO_AM_I}: version: #{STRIKER_VERSION}"
-  end
-
-  def print_help_message
-    puts <<-HELP
-      Usage: strikerC [options]
-      Options:
-        --help                                   Show this help message
-        --version                                Display the program version
-        -h, --number-of-hands <number of hands>  The number of hands to play in this simulation
-        -M, --mimic                              Use the mimic dealer player strategy
-        -B, --basic                              Use the basic player strategy
-        -N, --neural                             Use the neural player strategy
-        -L, --linear                             Use the liner regression player strategy
-        -P, --polynomial                         Use the polynomial regression player strategy
-        -H, --high-low                           Use the high low count player strategy
-        -W, --wong                               Use the Wong count player strategy
-        -1, --single-deck                        Use a single deck of cards and rules
-        -2, --double-deck                        Use a double deck of cards and rules
-        -6, --six-shoe                           Use a six deck shoe of cards and rules
-    HELP
+    raise "Number of hands must be between #{NUMBER_OF_HANDS_MINIMUM} and #{NUMBER_OF_HANDS_MAXIMUM}"
   end
 end

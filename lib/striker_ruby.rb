@@ -9,15 +9,7 @@ require_relative 'constants/constants'
 require_relative 'xlog/xlog'
 
 def main
-  if Xlog.init_syslog
-    Xlog.log_info('Started simulation at %s', Time.now)
-    Xlog.log_error('Error loading deck at %s', Time.now)
-    Xlog.log_fatal('Fatal crash at %s', Time.now)
-    Xlog.close_syslog
-  else
-    puts 'Failed to initialize syslog'
-  end
-
+  initialize_xlogs
   print_start_message
   parameters, rules, strategy = initialize_arguments
   simulator = initialize_simulator(parameters, rules, strategy)
@@ -28,6 +20,17 @@ def main
   report.finish
   report_print(report)
   report_insert(report)
+end
+
+def initialize_xlogs
+  if Xlog.init_syslog
+    Xlog.log_info('Started simulation at %s', Time.now)
+    Xlog.log_error('Error loading deck at %s', Time.now)
+    Xlog.log_fatal('Fatal crash at %s', Time.now)
+    Xlog.close_syslog
+  else
+    puts 'Failed to initialize syslog'
+  end
 end
 
 def print_start_message
